@@ -1,0 +1,2 @@
+# LinuxtoLearn
+主要的文件和内容为学习Linux的一些命令和脚本学习
