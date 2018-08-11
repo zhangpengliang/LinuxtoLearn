@@ -1,0 +1,528 @@
+
+
+cp 复制
+mv 移动
+cat tac tail head less more 查看文件
+
+touch 创建文件
+mkdir 创建文件夹
+rmdir 删除文件夹
+
+wc 统计
+
+ctrl+a 跳到命令行首
+ctrl+e 跳到命令行尾
+ctrl+u 删除光标到行首的命令
+ctrl+k, 光标到行尾，删除
+ctrl+l 清屏==clear
+
+
+alias 别名=命令  如：alias cls=clear 输入cls就可以清除屏幕了
+unalias 别名 删除别名 如：unalias cls
+
+命令替换操作
+`` 和 $(命令)  返回的是命令的执行结果
+
+命令替换：echo "当前目录为：$(pwd)";----->$(pwd)
+
+bash支持的引号
+`` 反引号，命令替换
+"" 双引号 弱引用 可以实现变量替换
+''单引号：强引用，不完成变量替换
+$(abc) abc只能是命令语句，不能是变量和``同理
+$abc 这里的abc是变量，且只是变量，
+
+
+
+用户 组 权限
+
+权限
+r w x
+文件：
+r：可读，可以使用cat more less等命令查看  
+w:可写，可以编辑这个文件
+x:可执行，可以命令提示符下当做命令提交给内核运行
+
+目录：
+r：可以对此目录执行ls等列出所有文件
+w: 可以在此目录创建文件
+x: 可以使用cd切换进次目录，也可以使用ls -l查看内部文件的详细信息
+
+useradd usermod userdel passwd 用于修改用户密码  id用于显示用户id信息  pwck检查密码文件的完整性
+
+------------------------
+root权限修改密码
+修改密码：passwd 用户名   
+
+普通用户修改密码：
+直接敲命令：passwd
+
+------------------------
+
+chown改变文件属主，只有管理员有权限
+	# chown username file,..
+		-R：修改目录以及其内部文件的属主
+		
+chgrp:修改文件属组
+
+chgrp groupname file
+
+
+chmod 修改读写权限
+
+chmod MODE 文件 修改三类用户权限
+
+修改某一类用户权限
+
+chmod 用户类别=MODE  file
+如：
+chmod u=rwx file 属主
+chmod g=rw- file 属组
+chmod o=x file 其他用户
+
+chmod go=rw 文件 属组和其他用户同时改
+
+
+umask 遮掩码
+默认创建文件的权限：666-umask
+目录权限：777-umask
+
+登录shell的类型
+登录式shell:
+	su - username
+	su -l username
+	
+非登录shell
+	su username 
+	
+bash的配置文件
+	全局配置：相当于房子框架都一样
+		/etc/profile,/etc/profile.d/*.sh，/etc/bashrc
+	个人配置：--个人装修的
+		./.bash_profile,~/.bashrc
+		
+	全局：profile类文件
+		设定环境变量
+		运行命令或者脚本，（一登录就会调用）
+	  bashrc类文件
+		设定本地变量
+		定义命令别名
+		
+登录式shell如何读取配置文件
+/etc/profile-->/etc/profile.d/*.sh--->~/.bash_profile--->~/.bashrc--->etc/bashrc
+
+非登录式shell如何获取配置文件
+~/.bashrc ---->/etc/basrc/-->etc/profile.d/*.sh
+
+如果全局那么就修改etc/profile 如果是用户局部生效：修改用户家目录下的/.bash_profile
+
+-----------------------------------------------------------------------------------
+
+
+
+I/o重定向
+> 输出
+< 输入
+
+> ：覆盖输出
+>>：追加输出
+
+ ls ./bin > ./test/out
+ 
+ set -C：禁止对已经存在的文件使用覆盖重定向
+		如果强制覆盖输出，则使用>|
+	 +C:关闭上述功能
+
+ 重定向错误输出：2> 覆盖错误输出
+ 2>>：追加方式实现错误输出
+
+ 既定向标准输出，又定向错误输出
+ 如： ls /var > /tmp/out 2> /tmp/out===输出到同一个文件中
+ 简单放法：
+ &> :重定向标准输出或错误输出到同一个文件
+ &>>重定向追加方式输出
+ 
+ 输入：
+ < 输入重定向
+ << here Document
+ 
+
+ 管道：
+  命令1|命令2|命令3。。。。
+  
+  意思：前一个命令的输出作为后一个命令的输入；--像是多层过滤一样
+  
+tee 将标准输入复制到每个指定文件，并显示到标准输出。
+ 如：echo "hello world" | tee /www/a.out
+&> 错误和标准输出（重定向输出） /dev/null 是个黑洞，所有输出到这里的，都不会有反应，也不会有打印信息
+
+所以如果不想显示到屏幕，那么 echo "hello world" &> /dev/null 这样就也执行了，但是不会在屏幕上显示
+
+
+
+ 
+ 如果只显示文件的行数：
+ wc -l a.out |cut -d' ' -f1  ：显示文件中的行数 wc命令是用于统计的
+
+
+管道的应用：取出文件a的第六行
+# head -6 a|tail -1
+
+取出/etc/passwd 文件中倒数第9个用户名和shell 显示到屏幕上并将其保存至/tmp/users文件中
+ #tail -9 /etc/passwd|head -1|cut -d: -f1,7|tee 
+# tail -9 /etc/passwd | head -1 |cut -d: -f1 |&>/tmp/users
+
+显示/etc/下所有以pa开头的文件并统计其个数
+# ls -d /etc/pa* |wc -l
+
+不使用文本编辑器，将alias cls=clear 一行内容添加到当前用户的.bashrc文件中
+# echo "alias cls=clear" >> ~/.bashrc 直接追加到文件中，要是想显示到屏幕可以使用tee
+
+
+文本查找的需要：grep
+grep [options] "文本字符"
+
+grep egrep fgrep
+
+
+grep ,sed(流编辑器),awk
+sed基本用法：
+sed是什么：Stream Editor，是一个行编辑器
+
+sed :模式空间。每次都会读取一行读到模式空间，然后根据给出的命令编辑，，
+	然后输出到屏幕，但是默认是不会编辑源文件，只是对模式空间中的数据做编辑
+	处理结束后将模式空间打印到屏幕
+sed 'AddressCommand' file ..
+Address:
+1:StartLine,EndLine
+	1,100 第一行到最后一行
+2：正则
+	
+	
+	
+	
+
+
+
+
+shell 编程
+shell 弱类型编程语言
+强： 变量在使用前，必须事先声明，甚至还需要初始化
+弱：变量用时声明，甚至不区分类型
+
+bash变量类型
+	环境变量
+	本地变量（局部变量）
+	位置变量
+	特殊变量
+	
+什么时候使用双引号什么时候使用单引号
+	内部有变量想替换，双引号，否则使用单引号
+	NAME=zhang
+	echo $NAME --zhang
+	echo '$NAME' --$NAME
+	echo "$NAME" --zhang
+	
+本地变量：
+	varname=value 作用域作用域整个脚本进程，
+局部变量：
+	local varname=value 只对当前的代码段有效
+环境变量：
+	export varname=value
+
+位置变量
+$1,$2,...
+特殊变量
+如：
+$?:上一个命令的执行状态返回值
+0：表示正确运行
+1~225：表示错误状态， 1 2 127系统预留
+
+dev是个什么目录？dev下都是设备
+
+撤销变量：
+unset varname
+
+查看当前shell中的环境变量
+printenv
+env
+export
+以上三个命令都可以查看
+
+变量字符串的补充
+如：ANIMALS=pig
+	ANIMALS=$ANIMALS:goat  ---pig:goat
+	
+对shell来讲，所有的变量都是字符串的。所以无法做加减乘除算法运算
+
+写脚本：命令的堆砌，
+脚本一结束，变量就会被撤销
+---------------------------------------------------
+#!/bin/bash
+
+#注释行，不执行
+
+练习：
+添加5个用户，user1..user5
+每个用户的密码同用户名，而且要求，添加密码完成后，不显示passwd命令的执行结果消息
+每个用户添加完成后，都要显示用户某某已经添加成功
+
+#!/bin/bash
+useradd user1
+echo "user1" | passwd --stdin user1 &> /dev/null
+#&> 错误和标准输出（重定向输出） /dev/null 是个黑洞，所有输出到这里的，都不会有反应，也不会有打印信息
+echo "Add user1 successfully"
+
+条件测试类型：
+整数测试
+字符测试
+文件测试
+
+条件测试的表达式
+[expression]  命令测试法
+[[expression]] 关键字测试法
+test expression 
+整数比较：
+	-eq ：测试两个整数是否相等 A=8 B=7 [ $A -eq $B ] echo $? ($?真为0，假为1)
+	-ne :测试是否不相等
+	-gt :是否大于 大于为真，小于为假
+	-lt :是否小于
+	-ge:大于等于
+	-le:小于等于
+
+命令间的逻辑关系
+	逻辑与：&&
+	逻辑或：||
+	逻辑非: ! 如：! id user && useradd user
+
+如果用户不存在，添加并给密码，否则显示其已经存在
+
+! id user1 && adduser user1 && echo "zpl" | passwd --stdin user1 || echo "用户已经存在"
+
+当前系统有多少个用户：
+USERS=$(wc -l /etc/passwd |cut -d ' ' -f1)
+echo `USERS` users
+
+给定一个用户变量，如果uuid为0 则打印为管理员，否则打印普通用户
+#!/bin/bash
+NMAE=zpl
+USERID=`id -u $NAME`
+[ $USERID -eq 0 ] && echo "Admin" || echo " Common user."
+   
+条件判断，控制结构
+----
+ 单分支if语句
+if 条件判断; then
+	语句1
+	语句2
+	....
+fi
+-------
+-------
+双分支的if语句
+if 判断条件; then
+	statement1
+	statement2
+	....
+else
+    statement3
+	statement4
+	.....
+fi
+------
+判断是否有空白行，可以用正则来判断 ^$
+
+
+etc/shadow 密码文件的解释：9个字段
+1登录名 ：
+2密码  ：
+3最后一次更改密码日期（天数）:
+4密码最小年龄（要等多长时间才可以改密码）
+5最大密码年龄（超过后需要更改密码），如果用户最大密码年龄小于最小密码，那么用户将不能修改密码
+6密码警告时间段：密码过期前提前警告用户的天数
+7密码禁用期：密码过期后，仍然接受次密码的天数
+8账户过期日期：天数，账户过期不同于密码过期，账户过期，用户将不被用于登录，字段为空表示永不过期，
+9保留字段：
+
+history命令显示历史命令
+$HISTSIZE 显示命令个数\大小
+--------------------------------
+shell如何进行算术运算
+1、let 算术运算表达式 
+	A=3 B=5
+	let c=$A+$B
+2、使用$[算术运算]
+  D=$[$A+$B]
+  
+3、$((算术运算))
+	D=$(($A+$B))
+	
+4、expr 命令：表达式中各操作数以运算符之间要有空格
+ D=`expr $A + $B`
+
+ 
+可以提前结束脚本的命令
+exit :退出当前脚本
+exit #
+如果脚本没有明确定义退出码，那么，最后执行的一条命令的退出码就是脚本的退出码
+
+
+
+
+文件测试：
+-e FILE: 测试文件是否存在
+-f FILE:测试文件是否为普通文件
+-d FILE:测试指定路径是否为目录
+-r FILE:测试当前用户对指定文件是否有读取权限
+-w
+-x
+如:
+[ -e /etc/initab ]
+
+多分支的if语句
+if 判断条件; then
+	statement1
+elif 判断条件; then 
+	statement2
+else 
+	statement3
+fi
+
+bash -x 脚本  用于显示脚本执行的过程，显示出来每一步的操作
+
+bash变量类型
+	本地变量（局部变量）：当前shell进程
+	环境变量：当前shell进程以及其子进程
+	位置变量：
+		$1,$2...----可以带参数>__<
+		shift 变量：轮替的作用，shift一次，第一个参数就被踢掉了，第二个就变成第一个了
+		shift n ；一次踢掉n个，默认是1个
+	特殊变量：
+		$?:上一条命令的状态码
+		$#:返回参数的个数
+		$*:参数列表
+		$@：参数列表
+
+如执行脚本2.sh
+./2.sh a b
+
+在2.sh中
+$1-->a
+$2-->b 
+练习：能接受一个参数（文件路径），如果存在这个文件，就显示ok，否则显示没有
+
+echo "$1"
+echo "$*"
+echo "$#"
+echo "$@"
+if [ $# -eq 0 ]; then
+	echo "请输入参数信息"
+	exit 1;
+fi
+
+
+if [ -e $1 ]; then
+	echo "OK"
+else
+	echo "No Such File"
+fi
+
+
+sed 命令的使用。。。。。。。。。。。。
+-------------------------------------
+字符测试
+等值比较
+	== ：相等为真不等为假。等号两端需要空格{一个等号或者两个等号都可以}
+不等号：
+	!=: 是否不等
+如：
+	[ $A == $B ]、[ $A != $B ]
+	
+	-n string ：测试指定字符串是否为空，空为真，不空为假
+	-s string :测试指定字符串是否不空
+
+	
+#!/bin/bash
+
+if ! id $1 &> /dev/null;then
+	echo "No Such user"
+	exit 10
+fi
+
+if [ `id -n -u $1` == `id -n -g $1` ]; then
+	echo "一样"
+else
+	echo "不一样"
+fi
+
+练习：传递一个参数（单个字符就可以），如果为q或者Q或者quit或者Quit,就退出脚本，否则，就打印参数
+#!/bin/bash
+if [ $1 == 'q' ] || [ $1 == 'Q' ];then
+	echo "退出"
+	exit 1
+fi
+
+这里字符的判断需要用单引号括起来  'quit'
+
+bc命令的使用
+ echo "scale=2;111/22;" | bc   管道送给bc
+ bc <<< "scale=2;111/22;"
+ 
+--------------------------------------------------------
+
+循环：进入条件，退出条件
+
+for 
+while
+until
+
+for 变量 in 列表; do
+	循环体
+done
+
+1...100相加
+1：生成列表： 
+方式1：{1..100}
+方式2：seq命令  `seq [起始数 [步长]] 尾数`
+
+
+
+
+declare -i 变量:申明变量为数值型
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
